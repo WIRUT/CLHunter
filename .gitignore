@@ -1,3 +1,6 @@
-private.py
+slackapitoken.py
 result.csv
 venv/
+*.swp
+*.csv
+*.pyc
