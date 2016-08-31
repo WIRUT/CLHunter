@@ -1,8 +1,11 @@
-import clhunter
+def load_src(name, fpath):
+    import os, imp
+    return imp.load_source(name, os.path.join(os.path.dirname(__file__), fpath))
+load_src("clhousehunter", "../lib/clhousehunter.py")
+import clhousehunter 
 import unittest
 
 class TestAreaBoundChecker(unittest.TestCase):
-
     coords= [ 
             [49.2652, -123.137984], 
             [49.279425, -123.097472] 
@@ -10,30 +13,30 @@ class TestAreaBoundChecker(unittest.TestCase):
 
     def test_bound_checker_true(self):
         aoi = [49.271829, -123.12164]
-        self.assertEqual(clhunter.area_bound_checker(aoi, self.coords), True)
+        self.assertEqual(clhousehunter.area_in_bounds(aoi, self.coords), True)
 
     def test_bound_checker_false(self):
         aoi = [49.231829, -123.92164]
-        self.assertEqual(clhunter.area_bound_checker(aoi,self.coords), False)
+        self.assertEqual(clhousehunter.area_in_bounds(aoi,self.coords), False)
 
     def test_empty_aoi(self):
         aoi = []
-        self.assertEqual(clhunter.area_bound_checker(aoi,self.coords), False)
+        self.assertEqual(clhousehunter.area_in_bounds(aoi,self.coords), False)
 
     def test_one_aoi(self):
         aoi = [0]
-        self.assertEqual(clhunter.area_bound_checker(aoi,self.coords), False)
+        self.assertEqual(clhousehunter.area_in_bounds(aoi,self.coords), False)
 
 
 class TestInAreaOfInterest(unittest.TestCase):
 
     def test_in_aoi(self):
         aoi = [49.26938671, -123.1148529053]
-        self.assertEqual(clhunter.in_area_of_interest(aoi),(True,'False_Creek'))
+        self.assertEqual(clhousehunter.in_area_of_interest(aoi),(True,'False_Creek'))
 
     def test_empty_aoi(self):
         aoi = []
-        self.assertEqual(clhunter.in_area_of_interest(aoi),(False, None))
+        self.assertEqual(clhousehunter.in_area_of_interest(aoi),(False, None))
 
 # class TestInAOIMethods(unittest.TestCase):
     # def test_isupper(self):

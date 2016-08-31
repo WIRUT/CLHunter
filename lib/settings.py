@@ -1,13 +1,30 @@
-from err.errormsg import * 
+def load_src(name,fpath):
+    import os, imp
+    try:
+        return imp.load_source(name, 
+                os.path.join(os.path.dirname(__file__), fpath))
+    except IOError:
+        print "Filename: '{}' is missing.".format(fpath)
+        return None
 try:
+    load_src("slackapitoken", "slackapitokens.py")
     import slackapitoken
-    # SLACK_TOKEN = slackapitoken.SLACK_TOKEN
+    SLACK_TOKEN = slackapitoken.SLACK_TOKEN
 except ImportError:
-    print ErrorMsg().importErrorMsg() 
+    print "Missing SLACK_TOKEN. Displaying results in command-line."
     SLACK_TOKEN = None 
 
 
-# Modify the variables below:
+
+###############################################################################
+#                           Modifiable Variables                              #
+###############################################################################
+
+HUNT_JOB = False
+HUNT_APT = True
+
+
+########################## Housing Configurations #############################
 SLACK_CHANNEL = "#general"
 MIN_PRICE = 500
 MAX_PRICE = 1500
