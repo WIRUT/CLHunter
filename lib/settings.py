@@ -23,13 +23,13 @@ except ImportError:
 HUNT_JOB = False
 HUNT_APT = True
 
-
+SLEEP_INTERVAL = 20 * 60 #20 mins
 ########################## Housing Configurations #############################
 SLACK_CHANNEL = "#general"
 MIN_PRICE = 500
 MAX_PRICE = 1500
-AREA = 'cal'
-SITE = 'calgary'
+AREA = 'van'
+SITE = 'vancouver'
 CATEGORY = 'apa'
 
 

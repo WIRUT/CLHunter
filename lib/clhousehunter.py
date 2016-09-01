@@ -6,10 +6,11 @@ from craigslist import CraigslistHousing
 from slackclient import SlackClient
 import time
 import settings
-from sqlalchemy import create_engine, Column, Integer, String, Datetime, Float
+from dateutil.parser import parse
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Float
 from sqlalchemy import Boolean
 from sqlalchemy.orm import sessionmaker
-from sql.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 
 try:
     sc = SlackClient(settings.SLACK_TOKEN)
@@ -28,7 +29,7 @@ class Listings(Base):
     lat = Column(Float)
     lon = Column(Float)
     name = Column(String)
-    price = Column(Float)
+    price = Column(String)
     location = Column(String)
     cl_id = Column(Integer, unique=True)
     area = Column(String)
@@ -38,7 +39,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 def create_list(area, result):
-    listing = Listing(
+    listing = Listings(
             cl_id = result["id"],
             link = result["url"],
             created = parse(result["datetime"]),
