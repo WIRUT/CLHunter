@@ -1,6 +1,7 @@
 from clhousehunter import start_cl_house_hunt
 import settings
 import time
+import traceback
 import os
 
 
@@ -13,6 +14,9 @@ if __name__== '__main__':
             start_cl_job_hunt()
     except KeyboardInterrupt:
         print("\nExiting...")
+    except Exception as exc:
+        print "Error with the scraping:", sys.exc_info()[0])
+        traceback.print_exc()
     else:
         print("{}: Scraping complete".format(time.ctime()))
     

@@ -28,8 +28,8 @@ HUNT_APT = True
 SLACK_CHANNEL = "#general"
 MIN_PRICE = 500
 MAX_PRICE = 1500
-AREA = 'van'
-SITE = 'vancouver'
+AREA = 'cal'
+SITE = 'calgary'
 CATEGORY = 'apa'
 
 

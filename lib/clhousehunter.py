@@ -6,11 +6,53 @@ from craigslist import CraigslistHousing
 from slackclient import SlackClient
 import time
 import settings
+from sqlalchemy import create_engine, Column, Integer, String, Datetime, Float
+from sqlalchemy import Boolean
+from sqlalchemy.orm import sessionmaker
+from sql.ext.declarative import declarative_base
 
 try:
     sc = SlackClient(settings.SLACK_TOKEN)
 except AttributeError:
     sc = None
+
+engine = create_engine('sqlite:///listings.db', echo=True)
+Base = declarative_base()
+
+class Listings(Base):
+    __tablename__= 'listings'
+    id = Column(Integer, primary_key=True)
+    link = Column(String, unique=True)
+    created = Column(DateTime)
+    geotag = Column(String)
+    lat = Column(Float)
+    lon = Column(Float)
+    name = Column(String)
+    price = Column(Float)
+    location = Column(String)
+    cl_id = Column(Integer, unique=True)
+    area = Column(String)
+
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
+
+def create_list(area, result):
+    listing = Listing(
+            cl_id = result["id"],
+            link = result["url"],
+            created = parse(result["datetime"]),
+            lat = result["geotag"][0],
+            lon = result["geotag"][1],
+            name = result["name"],
+            price = result["price"],
+            location = area
+            )
+    return listing
+
+def save_to_db(listing):
+    session.add(listing)
+    session.commit()
 
 def area_in_bounds(coords, box = settings.AREAS_OF_INTEREST):
     if coords is not None and len(coords) == 2 and \
@@ -43,11 +85,15 @@ def in_neighborhood(location):
 
 def cl_info_parser(area, result):
     desc = None
+    if area is None:
+        area = "N/A"
     try:
         desc = "{0} | {1} | {2} | <{3}>".format(result["price"], \
             result["name"], area, result["url"])
     except UnicodeEncodeError:
         print "UnicodeEncodeError for url:{}".format(result["url"])
+    except TypeError:
+        print "Method argument error."
     return desc
 
 
@@ -61,7 +107,7 @@ def post_to_slack(description):
         print("Error. Nothing to post.")
 
 
-def cl_hunt_result(cl_housing):
+def scrape_cl(cl_housing):
     for result in cl_housing.get_results(sort_by='newest', geotagged=True):
         geotag = result["geotag"]
         aoi_tuple = in_area_of_interest(geotag) 
@@ -72,6 +118,8 @@ def cl_hunt_result(cl_housing):
         if aoi_found is True:
             area = aoi_tuple[1]
             description = cl_info_parser(area, result)
+            listing = create_list(area, result)
+            save_to_db(listing)
             post_to_slack(description)
 
 
@@ -85,4 +133,4 @@ def start_cl_house_hunt():
             )
     if sc is None:
         print "\nSlack Token is missing. Displaying results in command-line:\n"
-    result = cl_hunt_result(cl_housing)
+    scrape_cl(cl_housing)
