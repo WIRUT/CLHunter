@@ -20,17 +20,46 @@ except ImportError:
 #                           Modifiable Variables                              #
 ###############################################################################
 
-HUNT_JOB = False
-HUNT_APT = True
+HUNT_JOB = True
+HUNT_APT = False 
 
 SLEEP_INTERVAL = 20 * 60 #20 mins
+
+########################## Job Search Configurations ###########################
+SLACK_CHANNEL_JOBS = "#jobsearch"
+JOB_CATEGORY = 'sof'
+JOB_SEARCHWORD = ['entry', 'new grad', 'junior']
+
+# Coordinates from BoundingBox(http://boundingbox.klokantech.com/)
+JOB_AREAS_OF_INTEREST = {
+        "Vancouver": [
+            [49.198177, -123.21579],
+            [49.338322, -123.023068],
+            ],
+        "Burnaby": [
+            [49.180637, -123.02465],
+            [49.295133, -122.891689],
+            ],
+        "New Westminster": [
+            [49.175135, -122.959959],
+            [49.237978, -122.875062],
+            ],
+#         "All of Vancouver" : [
+#             [49.263268,-123.149872],
+#             [49.293281,-123.09906]
+#             ],
+}
+
+JOB_LOCATIONS_UNWANTED = ["Richmond", "Surrey", "Delta", "Victoria", "Vic", \
+        "Abby", "Abbotsford", "Cloverdale", "Mission", "Port Moody"]
+
 ########################## Housing Configurations #############################
-SLACK_CHANNEL = "#general"
+SLACK_CHANNEL_HOUSING = "#apthunt"
 MIN_PRICE = 500
 MAX_PRICE = 1500
 AREA = 'van'
 SITE = 'vancouver'
-CATEGORY = 'apa'
+HOUSING_CATEGORY = 'apa'
 
 
 # Coordinates from BoundingBox(http://boundingbox.klokantech.com/)

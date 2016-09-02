@@ -1,4 +1,5 @@
 from clhousehunter import start_cl_house_hunt
+from cljobhunter import start_cl_job_hunt
 import settings
 import time
 import traceback

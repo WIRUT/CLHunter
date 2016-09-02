@@ -2,7 +2,7 @@ def load_src(name, fpath):
     import os, imp
     return imp.load_source(name, os.path.join(os.path.dirname(__file__), fpath))
 load_src("settings", "settings.py")
-from craigslist import CraigslistHousing
+from craigslist import CraigslistJobs
 from slackclient import SlackClient
 import time
 import settings
@@ -21,13 +21,11 @@ engine = create_engine('sqlite:///listings.db', echo=True)
 Base = declarative_base()
 
 class Listings(Base):
-    __tablename__= 'housinglistings'
+    __tablename__= 'joblistings'
     id = Column(Integer, primary_key=True)
     link = Column(String, unique=True)
     created = Column(DateTime)
     geotag = Column(String)
-    lat = Column(Float)
-    lon = Column(Float)
     name = Column(String)
     price = Column(String)
     location = Column(String)
@@ -43,11 +41,9 @@ def create_list(area, result):
             cl_id = result["id"],
             link = result["url"],
             created = parse(result["datetime"]),
-            lat = result["geotag"][0],
-            lon = result["geotag"][1],
             name = result["name"],
             price = result["price"],
-            location = area
+            location = result["where"],
             )
     return listing
 
@@ -67,30 +63,31 @@ def in_area_of_interest(geotag):
     area = None 
     area_found = False
     if geotag is not None and len(geotag) == 2:
-        for a, coords in settings.AREAS_OF_INTEREST.items():
+        for a, coords in settings.JOB_AREAS_OF_INTEREST.items():
             if area_in_bounds(geotag, coords):
                 area = a
                 area_found = True
     return (area_found, area);
 
 
-def in_neighborhood(location):
-    area = None
-    area_found = False
-    for hood in settings.NEIGHBORHOODS:
-        if location is not None and hood in location.lower():
-            area_found = True
-            area = hood
-    return (area_found, area);
+def not_in_undesired_areas(location):
+    for hood in settings.JOB_LOCATIONS_UNWANTED:
+        if location is None or hood.lower() in location.lower():
+            return False
+    return True 
 
 
 def cl_info_parser(area, result):
     desc = None
-    if area is None:
+    if area is None and result["where"] is None:
         area = "N/A"
+    elif area is not None:
+        location = area
+    else:
+        location = result["where"]
     try:
-        desc = "{0} | {1} | {2} | <{3}>".format(result["price"], \
-            result["name"], area, result["url"])
+        desc = "{0} | {1} | <{2}>".format(\
+            result["name"], location, result["url"])
     except UnicodeEncodeError:
         print "UnicodeEncodeError for url:{}".format(result["url"])
     except TypeError:
@@ -100,7 +97,7 @@ def cl_info_parser(area, result):
 
 def post_to_slack(description):
     if description is not None and sc is not None:
-        sc.api_call( "chat.postMessage", channel=settings.SLACK_CHANNEL_HOUSING, 
+        sc.api_call( "chat.postMessage", channel=settings.SLACK_CHANNEL_JOBS, 
                 text=description, username='Hal-2000')
     elif sc is None:
         print description
@@ -108,14 +105,14 @@ def post_to_slack(description):
         print("Error. Nothing to post.")
 
 
-def scrape_cl(cl_housing):
-    for result in cl_housing.get_results(sort_by='newest', geotagged=True):
+def scrape_cl(cl_jobs):
+    for result in cl_jobs.get_results(sort_by='newest', geotagged=True):
         geotag = result["geotag"]
         aoi_tuple = in_area_of_interest(geotag) 
         aoi_found = aoi_tuple[0]
-        if aoi_found is False:
+        if aoi_found is not True:
             location = result["where"]
-            aoi_found = in_neighborhood(location)
+            aoi_found = not_in_undesired_areas(location)
         if aoi_found is True:
             area = aoi_tuple[1]
             description = cl_info_parser(area, result)
@@ -124,14 +121,13 @@ def scrape_cl(cl_housing):
             post_to_slack(description)
 
 
-def start_cl_house_hunt():
-    cl_housing = CraigslistHousing(
-                                    site=settings.SITE,
-                                    area=settings.AREA,
-                                    category=settings.HOUSING_CATEGORY, 
-                                    filters={'min_price': settings.MIN_PRICE, 
-                                             'max_price': settings.MAX_PRICE}
-            )
+def start_cl_job_hunt():
     if sc is None:
         print "\nSlack Token is missing. Displaying results in command-line:\n"
-    scrape_cl(cl_housing)
+    for keyword in settings.JOB_SEARCHWORD:
+        cl_jobs = CraigslistJobs(
+                                        site=settings.SITE,
+                                        category=settings.JOB_CATEGORY, 
+                                        filters={'query': keyword }
+                )
+        scrape_cl(cl_jobs)
