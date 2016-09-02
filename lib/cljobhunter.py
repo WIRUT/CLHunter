@@ -125,6 +125,7 @@ def start_cl_job_hunt():
     if sc is None:
         print "\nSlack Token is missing. Displaying results in command-line:\n"
     for keyword in settings.JOB_SEARCHWORD:
+        print "Scraping with keyword: '{}'".format(keyword)
         cl_jobs = CraigslistJobs(
                                         site=settings.SITE,
                                         category=settings.JOB_CATEGORY, 
