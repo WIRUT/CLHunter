@@ -1,11 +1,15 @@
-#!/bin/bash -x
+#!/bin/bash 
 
 clear
 
-echo "virtualenv venv"
+echo "Creating virtual environment"
+virtualenv venv
 wait
-echo "pip install git+https://github.com/juliomalegria/python-craigslist"
+source venv/bin/activate
 wait
-echo "pip install slackclient sqlalchemy python-dateutil"
+echo "Installing needed python packages"
+pip install git+https://github.com/juliomalegria/python-craigslist
 wait
-echo "Installation complete. To run CLHunter type: 'python lib/main.py'"
+pip install slackclient sqlalchemy python-dateutil
+wait
+echo "\nInstallation complete. To run CLHunter type: 'python lib/main.py'"
